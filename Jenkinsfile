@@ -1,26 +1,40 @@
 pipeline {
     agent any
+
     environment {
-        SONAR_TOKEN = credentials('sonarqube-token')
+        SONAR_TOKEN = credentials('sonar-token') // Atur lewat Jenkins Credentials
     }
+
     stages {
         stage('Checkout') {
-            steps { git 'https://github.com/<user>/<repo>.git' }
+            steps {
+                git 'https://github.com/fandcomp/UTSSSDLC.git'
+            }
         }
+
         stage('Install Dependencies') {
-            steps { bat 'composer install' }
+            steps {
+                sh 'composer install' // Jika menggunakan Composer
+            }
         }
-        stage('Run PHPUnit') {
-            steps { bat 'vendor\\bin\\phpunit --configuration phpunit.xml' }
-        }
+
         stage('SonarQube Analysis') {
             steps {
-        withSonarQubeEnv('SonarQube') {
-            bat '"D:\\POLTEKSSN\\TINGKAT 3\\SEM 2\\SSDLC\\sonar-scanner-7.1.0.4889-windows-x64\\bin\\sonar-scanner.bat"'
+                withSonarQubeEnv('MySonarServer') {
+                    sh 'sonar-scanner -Dsonar.login=$SONAR_TOKEN'
                 }
             }
-        }}
-    post {
-        failure { echo 'Pipeline gagal, cek log.' }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                script {
+                    def qg = waitForQualityGate()
+                    if (qg.status != 'OK') {
+                        error "❌ Gagal Quality Gate dari SonarQube."
+                    }
+                }
+            }
+        }
     }
 }
