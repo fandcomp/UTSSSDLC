@@ -15,12 +15,11 @@ pipeline {
         }
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {
-                    bat 'E:\\Prog\\sonar-scanner\\bin\\sonar-scanner.bat'
+        withSonarQubeEnv('SonarQube') {
+            bat '"D:\\POLTEKSSN\\TINGKAT 3\\SEM 2\\SSDLC\\sonar-scanner-7.1.0.4889-windows-x64\\bin\\sonar-scanner.bat"'
                 }
             }
-        }
-    }
+        }}
     post {
         failure { echo 'Pipeline gagal, cek log.' }
     }
